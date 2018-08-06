@@ -70,7 +70,6 @@ class InstallProgramDriver:
       arg_and_value = arg.split("=")
       if len(arg_and_value) and arg_and_value[0] == versionCmndArgName:
         self.productVersion = arg_and_value[1].strip()
-
     # Get basic info after knowing the version
 
     productName = self.installObj.getProductName(self.productVersion)
@@ -264,7 +263,11 @@ in order to remove the intermediate source and build files.
     print("")
     
     if options.download:
-      self.installObj.doDownload()
+      try:
+        self.installObj.doDownload()
+      except:
+        print("Invalid version of " + productName + " specified")
+        exit(1)
     else:
       print("Skipping on request ...")
     

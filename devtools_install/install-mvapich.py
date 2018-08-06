@@ -43,11 +43,11 @@ import sys
 #
 # Defaults
 #
-mpichBaseName = "mpich"
-mpichDefaultVersion="3.1.3"
-mpichSupportedVersions = ["3.1.3"]
-mpichTarballVersions = {
-  "3.1.3" : "3.1.3"
+mvapichBaseName = "mvapich2"
+mvapichDefaultVersion="2.0"
+mvapichSupportedVersions = ["2.0"]
+mvapichTarballVersions = {
+  "2.0" : "2.0"
   }
 
 #
@@ -59,7 +59,7 @@ from InstallProgramDriver import *
 from GeneralScriptSupport import *
 
 
-class MpichInstall:
+class MvapichInstall:
 
   def __init__(self):
     self.dummy = None
@@ -69,16 +69,16 @@ class MpichInstall:
   #
 
   def getScriptName(self):
-    return "install-mpich.py"
+    return "install-mvapich.py"
 
   def getProductBaseName(self):
-    return mpichBaseName
+    return mvapichBaseName
 
   def getProductDefaultVersion(self):
-    return mpichDefaultVersion
+    return mvapichDefaultVersion
 
   def getProductSupportedVersions(self):
-    return mpichSupportedVersions
+    return mvapichSupportedVersions
 
   #
   # Called after knowing the product version but before parsing the
@@ -86,10 +86,10 @@ class MpichInstall:
   #
 
   def getProductName(self, version):
-    return mpichBaseName+"-"+version
+    return mvapichBaseName+"-"+version
 
   def getBaseDirName(self, version):
-    return mpichBaseName+"-"+version+"-base"
+    return mvapichBaseName+"-"+version+"-base"
 
   def getExtraHelpStr(self, version):
     return """
@@ -100,8 +100,8 @@ vars CC, CXX, and FC.
 NOTE: The assumed directory structure of the download source provided by the
 command --download-cmnd=<download-cmnd> is:
 
-   mpich-<version>-base/
-     mpich-<version>.tar.gz
+   mvapich-<version>-base/
+     mvapich-<version>.tar.gz
 """
 
   def injectExtraCmndLineOptions(self, clp, version):
@@ -125,11 +125,11 @@ command --download-cmnd=<download-cmnd> is:
   def setup(self, inOptions):
     self.inOptions = inOptions
     self.baseDir = os.getcwd()
-    self.mpichBaseDir = self.baseDir+"/"+self.getBaseDirName(self.inOptions.version)
-    mpichVersionFull = mpichTarballVersions[self.inOptions.version]
-    self.mpichTarball = "mpich-"+mpichVersionFull+".tar.gz"
-    self.mpichSrcDir = "mpich-"+mpichVersionFull
-    self.mpichBuildBaseDir = self.mpichBaseDir+"/mpich-build"
+    self.mvapichBaseDir = self.baseDir+"/"+self.getBaseDirName(self.inOptions.version)
+    mvapichVersionFull = mvapichTarballVersions[self.inOptions.version]
+    self.mvapichTarball = "mvapich-"+mvapichVersionFull+".tar.gz"
+    self.mvapichSrcDir = "mvapich-"+mvapichVersionFull
+    self.mvapichBuildBaseDir = self.mvapichBaseDir+"/mvapich-build"
     self.scriptBaseDir = getScriptBaseDir()
 
   #
@@ -137,39 +137,39 @@ command --download-cmnd=<download-cmnd> is:
   #
 
   def doDownload(self):
-    removeDirIfExists(self.mpichBaseDir, True)
+    removeDirIfExists(self.mvapichBaseDir, True)
     echoRunSysCmnd(self.inOptions.downloadCmnd)
 
   def doUntar(self):
     # Find the full name of the source tarball
-    echoChDir(self.mpichBaseDir)
-    echoRunSysCmnd("tar -xzf "+self.mpichTarball)
+    echoChDir(self.mvapichBaseDir)
+    echoRunSysCmnd("tar -xzf "+self.mvapichTarball)
     # NOTE: I found that you have to untar the tarball and can't store the
     # open source in the git repo.  Otherwise the timestaps are messed up and
     # it 'make' tries to recreate some generated files.
 
   def doConfigure(self):
-    createDir(self.mpichBuildBaseDir, True, True)
+    createDir(self.mvapichBuildBaseDir, True, True)
     echoRunSysCmnd(
-      "../"+self.mpichSrcDir+"/configure "+\
+      "../"+self.mvapichSrcDir+"/configure "+\
       " "+self.inOptions.extraConfigureOptions+\
       " --prefix="+self.inOptions.installDir,
       extraEnv={"CFLAGS":"-O3", "CXXFLAGS":"-O3", "FFLAGS":"-O3"},
       )
 
   def doBuild(self):
-    echoChDir(self.mpichBuildBaseDir)
+    echoChDir(self.mvapichBuildBaseDir)
     echoRunSysCmnd("make " + getParallelOpt(self.inOptions, "-j") \
       + self.inOptions.makeOptions)
 
   def doInstall(self):
-    echoChDir(self.mpichBuildBaseDir)
+    echoChDir(self.mvapichBuildBaseDir)
     echoRunSysCmnd("make " + getParallelOpt(self.inOptions, "-j") \
       + self.inOptions.makeOptions + " install")
 
   def getFinalInstructions(self):
     return """
-To use the installed version of mpich-"""+self.inOptions.version+""" add the path:
+To use the installed version of mvapich-"""+self.inOptions.version+""" add the path:
 
   """+self.inOptions.installDir+"""/bin
 
@@ -179,7 +179,7 @@ Also, when you link shared libs or executables, pass in:
 
    -Wl,-rpath,"""+self.inOptions.installDir+"""/lib[64]
 
-That will make it so that you don't need to add this MPICH libs to your
+That will make it so that you don't need to add this MVAPICH libs to your
 LD_LIBRARY_PATH.
 """
 
@@ -188,5 +188,5 @@ LD_LIBRARY_PATH.
 # Executable statements
 #
 
-mpichInstaller = InstallProgramDriver(MpichInstall())
-mpichInstaller.runDriver()
+mvapichInstaller = InstallProgramDriver(MvapichInstall())
+mvapichInstaller.runDriver()
