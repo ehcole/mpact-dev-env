@@ -49,7 +49,7 @@ gccDefaultVersion = "4.8.3"
 gccSupportedVersions = ["4.8.3"]
 
 
-#allows for any version of gcc to be installed --EHC
+#allows for any user-specified version of gcc to be installed --EHC
 for arg in sys.argv[1:]:
   if "version" in arg and "gcc" in arg:
     gccSupportedVersions.append(arg.split("=")[1])

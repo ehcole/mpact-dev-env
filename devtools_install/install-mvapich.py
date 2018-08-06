@@ -45,10 +45,15 @@ import sys
 #
 mvapichBaseName = "mvapich2"
 mvapichDefaultVersion="2.0"
-mvapichSupportedVersions = ["2.0"]
+mvapichSupportedVersions = ["2.0", "2.0"]
 mvapichTarballVersions = {
   "2.0" : "2.0"
   }
+for arg in sys.argv[1:]:
+  if "version" in arg and "mvapich" in arg:
+    mvapichSupportedVersions.append(arg.split("=")[1])
+    mvapichTarballVersions[arg.split("=")[1]] = arg.split("=")[1]
+    break
 
 #
 # Script code
@@ -179,7 +184,7 @@ Also, when you link shared libs or executables, pass in:
 
    -Wl,-rpath,"""+self.inOptions.installDir+"""/lib[64]
 
-That will make it so that you don't need to add this MVAPICH libs to your
+That will make it so that you don't need to add this MPICH libs to your
 LD_LIBRARY_PATH.
 """
 

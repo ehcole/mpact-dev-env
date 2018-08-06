@@ -45,10 +45,16 @@ import sys
 #
 mpichBaseName = "mpich"
 mpichDefaultVersion="3.1.3"
-mpichSupportedVersions = ["3.1.3"]
+mpichSupportedVersions = ["3.1.3", "3.3.0"]
 mpichTarballVersions = {
-  "3.1.3" : "3.1.3"
+  "3.1.3" : "3.1.3",
+  "3.3.0" : "3.3.0"
   }
+for arg in sys.argv[1:]:
+  if "version" in arg and "mpich" in arg:
+    mpichSupportedVersions.append(arg.split("=")[1])
+    mpichTarballVersions[arg.split("=")[1]] = arg.split("=")[1]
+    break
 
 #
 # Script code
