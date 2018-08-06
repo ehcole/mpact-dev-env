@@ -45,7 +45,7 @@
 
 from FindGeneralScriptSupport import *
 import InstallProgramDriver
-
+import os
 
 #
 # Defaults and constants
@@ -61,14 +61,16 @@ sourceGitUrlBase_default = "https://github.com/tribitsdevtools/"
 autoconf_version_default = "2.69"
 cmake_version_default = "3.3.2"
 gcc_version_default = "4.8.3"
-mpich_version_default = "3.1.3"
+mpich_version_default = "3.2.1"
+mvapich_version_default = "2.3"
+
 
 # Common (compile independent) tools
 commonToolsArray = [ "gitdist", "autoconf", "cmake" ]
 commonToolsChoices = (["all"] + commonToolsArray + [""])
 
 # Compiler toolset
-compilerToolsetArray = [ "gcc", "mpich" ];
+compilerToolsetArray = [ "gcc", "mpich", "mvapich" ];
 compilerToolsetChoices = (["all"] + compilerToolsetArray + [""])
 
 
@@ -402,7 +404,7 @@ def getToolsSelectedArray(toolsSelectedStr, validToolsArray):
     return []
   toolsArray = []
   for toolName in toolsSelectedStr.split(","):
-    if not toolName in validToolsArraySet:
+    if not toolName.split(':')[0] in validToolsArraySet:
       raise Exception("Error, '"+toolName+"' is not one of" \
         " '"+(",".join(validToolsArray))+"'")
     toolsArray.append(toolName)
@@ -454,6 +456,7 @@ def writeLoadDevEnvFiles(devEnvBaseDir, compilersToolsetBaseDir, inOptions):
     ("@AUTOCONF_VERSION@", autoconf_version_default),
     ("@GCC_VERSION@", gcc_version_default),
     ("@MPICH_VERSION@", mpich_version_default)
+    ("@MVAPICH_VERSION@", mvapich_version_default)
     ]
 
   load_dev_env_base = inOptions.loadDevEnvFileBaseName
@@ -545,9 +548,27 @@ def main(cmndLineArgs):
   #
   # Get the command-line options
   #
-
+  autoconf_version = autoconf_version_default
+  cmake_version = cmake_version_default
+  gcc_version = cmake_version_default
+  mpich_version = mpich_version_default
+  mvapich_version = mvapich_version_default
+  #iterates over tools selected. If name is specified and a ':' is present, non-default version was specified. Updating install version to specified value
+  #if no version was specified, default version will be installed
   inOptions = getCmndLineOptions(cmndLineArgs)
-
+  for toolName in inOptions.commonTools:
+    if "cmake" in toolName and ':' in toolName:
+      cmake_version = toolName.split(':')[1]
+    elif "autoconf" in toolName and ':' in toolName:
+      autoconf_version = toolName.split(':')[1]
+  for toolName in inOptions.compilerToolset:
+    if "gcc" in toolName and ':' in toolName:
+      gcc_version = toolName.split(':')[1]
+    elif "mpich" in toolName and ':' in toolName:
+      mpich_version = toolName.split(':')[1]
+    elif "mvapich" in toolName and ':' in toolName:
+      mvapich_version = toolName.split(':')[1]
+  print(cmake_version)
   if inOptions.skipOp:
     print("\n***")
     print("*** NOTE: --no-op provided, will only trace actions and not touch the filesystem!")
@@ -625,23 +646,44 @@ def main(cmndLineArgs):
   ###
 
   if inOptions.doDownload:
+    for tool in commonToolsSelectedSet:
+      if "cmake" in tool:
+        print("")
+        print("Downloading the source for cmake-" + cmake_version + " ...")
+        print("")
+        if not inOptions.skipOp:
+          os.system("wget -p " + dev_env_base_dir + "/common_tools https://cmake.org/files/v3.3/cmake-" + cmake_version + ".tar.gz")
+        else:
+          print("wget -p " + dev_env_base_dir + "/common_tools https://cmake.org/files/v3.3/cmake-" + cmake_version + ".tar.gz")
+      elif "autoconf" in tool:
+        downloadToolSource("autoconf", autoconf_version,
+          inOptions.sourceGitUrlBase, inOptions)
+    for tool in compilerToolsetSelectedSet:
+      if "gcc" in tool:
+        print("")
+        print("Downloading the source for gcc-" + gcc_version + " ...")
+        print("")
+        if not inOptions.skipOp:
+          os.system("wget -p " + scratch_dir + " https://ftp.gnu.org/gnu/gcc/gcc-" + gcc_version + "/gcc-" + gcc_version + ".tar.gz")
+        else:
+          print("wget -p " + scratch_dir + " https://ftp.gnu.org/gnu/gcc/gcc-" + gcc_version + "/gcc-" + gcc_version + ".tar.gz")
 
-    if "cmake" in commonToolsSelectedSet:
-      downloadToolSource("cmake", cmake_version_default,
-        inOptions.sourceGitUrlBase, inOptions)
-
-    if "autoconf" in commonToolsSelectedSet:
-      downloadToolSource("autoconf", autoconf_version_default,
-        inOptions.sourceGitUrlBase, inOptions)
-
-    if "gcc" in compilerToolsetSelectedSet:
-      downloadToolSource("gcc", gcc_version_default,
-        inOptions.sourceGitUrlBase, inOptions)
-
-    if "mpich" in compilerToolsetSelectedSet:
-      downloadToolSource("mpich", mpich_version_default,
-        inOptions.sourceGitUrlBase, inOptions)
-
+      elif "mpich" in tool:
+        print("")
+        print("Downloading the source for mpich-" + mpich_version + " ..")
+        print("")
+        if not inOptions.skipOp:
+          os.system("wget -p " + scratch_dir + "/ http://www.mpich.org/static/downloads/" + mpich_version + "/mpich-" + mpich_version + ".tar.gz")
+        else:
+          print("wget -p " + scratch_dir + "/ http://www.mpich.org/static/downloads/" + mpich_version + "/mpich-" + mpich_version + ".tar.gz")
+      elif "mvapich" in tool:
+        print("")
+        print("Downloading the source for mvapich-" + mvapich_version + " ..")
+        print("")
+        if not inOptions.skipOp:
+          os.system("wget -p " + scratch_dir + "/ http://mvapich.cse.ohio-state.edu/download/mvapich/mv2/mvapich2-" + mvapich_version + ".2.3.tar.gz")
+        else:
+          print("wget -p " + scratch_dir + "/ http://mvapich.cse.ohio-state.edu/download/mvapich/mv2/mvapich2-" + mvapich_version + ".2.3.tar.gz")
   else:
 
     print("Skipping download of the source for the tools on request!")
@@ -662,6 +704,13 @@ def main(cmndLineArgs):
     if "cmake" in commonToolsSelectedSet:
       installToolFromSource("cmake", cmake_version_default,
         common_tools_dir, None, inOptions )
+      os.system("yum install openssl-devel")
+      try:
+        os.system("cmake . -DCMAKE_USE_OPENSSL=ON -DCMAKE_INSTALL_PREFIX=" + dev_env_base_dir + "/common_tools/cmake-" + cmake_version + "/")
+      except:
+        os.system("cmake . -DCMAKE_INSTALL_PREFIX=" + dev_env_base_dir + "/common_tools/cmake-" + cmake_version + "/")
+      os.system("make -j8 install")
+
 
     if "autoconf" in commonToolsSelectedSet:
       installToolFromSource("autoconf", autoconf_version_default,
@@ -689,6 +738,25 @@ def main(cmndLineArgs):
          },
         inOptions
         )
+    if "mvapich" in compilerToolsetSelectedSet:
+      gccInstallDir = compiler_toolset_dir+"/gcc-"+gcc_version_default
+      if not os.path.exists(gccInstallDir) and not inOptions.skipOp:
+        raise Exception("Error, gcc has not been installed yet." \
+          "  Missing directory '"+gccInstallDir+"'") 
+      LD_LIBRARY_PATH = os.environ.get("LD_LIBRARY_PATH", "")
+      installToolFromSource(
+        "mvapich",
+        mvapich_version_default,
+        compiler_toolset_dir,
+        {
+          "CC" : gccInstallDir+"/bin/gcc",
+          "CXX" : gccInstallDir+"/bin/g++",
+          "FC" : gccInstallDir+"/bin/gfortran",
+          "LD_LIBRARY_PATH" : gccInstallDir+"/lib64:"+LD_LIBRARY_PATH
+         },
+        inOptions
+        )
+ 
 
   else:
 
@@ -700,7 +768,7 @@ def main(cmndLineArgs):
     
   if inOptions.showFinalInstructions:
     print("\nTo use the new dev env, just source the file:\n")
-    print("  source " + compiler_toolset_base_dir + "/load_dev_env.sh\n")
+    print("  source " + dev_env_base_dir + "/env/load_dev_env.sh\n")
     print("for sh or bash shells (or load_dev_env.csh for csh shell).\n")
     print("TIP: Add this source to your ~/.bash_profile!")
   else:
@@ -710,7 +778,17 @@ def main(cmndLineArgs):
     print("\n***")
     print("*** NOTE: --no-op provided, only traced actions that would have been taken!")
     print("***")
+  else:
+    os.system("mv load_dev_env.sh " + dev_env_base_dir + "/env")
+    os.system("mv load_dev_env.csh " + dev_env_base_dir + "/env")
   
+
+  print("installing CMake target for vera_tpls")
+  if not inOptions.skipOp:
+    os.system("mkdir " + dev_env_base_dir + "/tpls")
+    os.system("git submodule add https://github.com/CASL/vera_tpls" + dev_env_base_dir + "/tpls")
+  else:
+    print("git submodule add https://github.com/CASL/vera_tpls" + dev_env_base_dir + "/tpls")
   print("\n[End]")
 
 
