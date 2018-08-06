@@ -63,7 +63,7 @@ cmake_version_default = "3.3.2"
 gcc_version_default = "4.8.3"
 mpich_version_default = "3.2.1"
 mvapich_version_default = "2.3"
-
+mvapichInstalled = False
 
 # Common (compile independent) tools
 commonToolsArray = [ "gitdist", "autoconf", "cmake" ]
@@ -568,6 +568,7 @@ def main(cmndLineArgs):
       mpich_version = toolName.split(':')[1]
     elif "mvapich" in toolName and ':' in toolName:
       mvapich_version = toolName.split(':')[1]
+      mvapichInstalled = True
   print(cmake_version)
   if inOptions.skipOp:
     print("\n***")
@@ -604,8 +605,12 @@ def main(cmndLineArgs):
   compiler_toolset_dir = os.path.join(compiler_toolset_base_dir, "toolset")
   compiler_toolset_exists = os.path.exists(compiler_toolset_dir)
 
-  if inOptions.doInitialSetup:
+  dev_env_dir = os.path.join(dev_env_base_dir, "env")
+  dev_env_exists = os.path.exists(dev_env_dir)
 
+  if inOptions.doInitialSetup:
+    if not dev_env_exists and not inOptions.skipOp:
+      os.makedirs(dev_env_dir)
     if not dev_env_base_exists:
       print("Creating directory '" + dev_env_base_dir + "' ...")
       if not inOptions.skipOp:
@@ -705,13 +710,23 @@ def main(cmndLineArgs):
       installToolFromSource("cmake", cmake_version_default,
         common_tools_dir, None, inOptions )
       os.system("yum install openssl-devel")
-      try:
-        os.system("cmake . -DCMAKE_USE_OPENSSL=ON -DCMAKE_INSTALL_PREFIX=" + dev_env_base_dir + "/common_tools/cmake-" + cmake_version + "/")
-      except:
-        os.system("cmake . -DCMAKE_INSTALL_PREFIX=" + dev_env_base_dir + "/common_tools/cmake-" + cmake_version + "/")
-      os.system("make -j8 install")
-
-
+      if not inOptions.skipOp:
+        try:
+          os.system("cmake . -DCMAKE_USE_OPENSSL=ON -DCMAKE_INSTALL_PREFIX=" + dev_env_base_dir + "/common_tools/cmake-" + cmake_version + "/")
+        except:
+          os.system("cmake . -DCMAKE_INSTALL_PREFIX=" + dev_env_base_dir + "/common_tools/cmake-" + cmake_version + "/")
+        os.system("make -j8 install")
+        cmake_module = open(dev_env_dir + "/cmake-" + cmake_version, 'w+')
+        cmake_module.write("#%Module\n\n")
+        cmake_module.write("set version " + cmake-version)
+        cmake_module.write('set name "MPACT Development Environment - 2.1.0"')
+        cmake_module.write('set msg "Loads the development environment for MPACT."')
+        cmake_module.write('')
+        cmake_module.write("procs ModulesHelp { } {")
+        cmake_module.write(" puts stderr $msg }\n\n")
+        cmake_module.write("module-whatis $msg")
+        cmake_module.write(common_tools_dir + "cmake-$version/bin")
+        cmake_module.close()
     if "autoconf" in commonToolsSelectedSet:
       installToolFromSource("autoconf", autoconf_version_default,
         common_tools_dir, None, inOptions )
@@ -719,7 +734,56 @@ def main(cmndLineArgs):
     if "gcc" in compilerToolsetSelectedSet:
       installToolFromSource("gcc", gcc_version_default,
         compiler_toolset_dir, None, inOptions )
-
+      if not inOptions.skipOp:
+        gcc_module = open(dev_env_dir + "/gcc-" + gcc_version, 'w+')
+        gcc_module.write("#%module\n\n")
+        gcc_module.write("set root " + dev_env_base_dir)
+        gcc_module.write("set version gcc-" + gcc_version)
+        gcc_module.write("set tpldir " + dev_env_base_dir + "/tpls")
+        gcc_module.write('set name "MPACT Development Environment - $version"')
+        gcc_module.write('set msg "Loads the development environment for MPACT."')
+        gcc_module.write('proc ModulesHelp { } {')
+        gcc_module.write(" puts stderr $msg }")
+        gcc_module.write("module-whatis $msg")
+        if not mvapichInstalled:
+          gcc_module.write("if ![ is-loaded 'mpi/mpich-" + mpich_version + "-x86_64' ] {")
+          gcc_module.write(" module load mpi/mpich-" + mpich_version + "-x86_64 }")
+        else:
+          gcc_module.write("if ![ is-loaded 'mpi/mvapich-" + mvapich_version + "-x86_64' ] {")
+          gcc_module.write(" module load mpi/mvapich-" + mvapich_version + "-x86_64 }")
+        gcc_module.write("setenv TRIBITS_DEV_ENV_BASE          $root")
+        gcc_module.write("setenv TRIBITS_DEV_ENV_GCC_VERSION   $version")
+        gcc_module.write("setenv TRIBITS_DEV_ENV_COMPILER_BASE $root/$version")
+        gcc_module.write("setenv TRIBITS_DEV_ENV_MPICH_DIR     $env(MPI_HOME)")
+        gcc_module.write("setenv LOADED_TRIBITS_DEV_ENV        $version")
+        gcc_module.write("setenv LOADED_VERA_DEV_ENV        $version")
+        gcc_module.write("prepend-path PATH $root/common_tools")
+        gcc_module.write("set tplpath $tpldir/hdf5-1.8.10")
+        gcc_module.write("setenv HDF5_ROOT             $tplpath")
+        gcc_module.write("prepend-path PATH            $tplpath/bin")
+        gcc_module.write("prepend-path LD_LIBRARY_PATH $tplpath/lib")
+        gcc_module.write("prepend-path INCLUDE         $tplpath/include")
+        gcc_module.write("set tplpath $tpldir/lapack-3.3.1")
+        gcc_module.write("setenv BLAS_ROOT             $tplpath")
+        gcc_module.write("setenv LAPACK_DIR            $tplpath")
+        gcc_module.write("prepend-path LD_LIBRARY_PATH $tplpath/lib")
+        gcc_module.write("set tplpath $tpldir/hypre-2.9.1a")
+        gcc_module.write("setenv HYPRE_DIR             $tplpath")
+        gcc_module.write("prepend-path LD_LIBRARY_PATH $tplpath/lib")
+        gcc_module.write("set tplpath $tpldir/petsc-3.5.4")
+        gcc_module.write("setenv PETSC_DIR             $tplpath")
+        gcc_module.write("prepend-path PATH            $tplpath/bin")
+        gcc_module.write("prepend-path LD_LIBRARY_PATH $tplpath/lib")
+        gcc_module.write("set tplpath $tpldir/slepc-3.5.4")
+        gcc_module.write("setenv SLEPC_DIR             $tplpath")
+        gcc_module.write("prepend-path LD_LIBRARY_PATH $tplpath/lib")
+        gcc_module.write("set tplpath $tpldir/sundials-2.9.0")
+        gcc_module.write("setenv SUNDIALS_DIR          $tplpath")
+        gcc_module.write("prepend-path LD_LIBRARY_PATH $tplpath/lib")
+        gcc_module.write("set-alias gitdist-status     {gitdist dist-repo-status}")
+        gcc_module.write("set-alias gitdist-mod        {gitdist --dist-mod-only}")
+        gcc_module.close()
+        
     if "mpich" in compilerToolsetSelectedSet:
       gccInstallDir = compiler_toolset_dir+"/gcc-"+gcc_version_default
       if not os.path.exists(gccInstallDir) and not inOptions.skipOp:
@@ -738,7 +802,27 @@ def main(cmndLineArgs):
          },
         inOptions
         )
-    if "mvapich" in compilerToolsetSelectedSet:
+      if not inOptions.skipOp:
+        mpich_module = open(dev_env_dir + "/mpich-" + mpich_version, 'w+')
+        mpich_module.write("conflict mvapich")
+        mpich_module.write("prepend-path            PATH            /usr/lib64/mpich/bin")
+        mpich_module.write("prepend-path            LD_LIBRARY_PATH /usr/lib64/mpich/lib")
+        mpich_module.write("prepend-path            PYTHONPATH      /usr/lib64/python2.7/site-packages/mpich")
+        mpich_module.write("prepend-path            MANPATH         /usr/share/man/mpich-x86_64")
+        mpich_module.write("prepend-path            PKG_CONFIG_PATH /usr/lib64/mpich/lib/pkgconfig")
+        mpich_module.write("setenv                  MPI_BIN         /usr/lib64/mpich/bin")
+        mpich_module.write("setenv                  MPI_SYSCONFIG   /etc/mpich-x86_64")
+        mpich_module.write("setenv                  MPI_FORTRAN_MOD_DIR     /usr/lib64/gfortran/modules/mpich-x86_64")
+        mpich_module.write("setenv                  MPI_INCLUDE     /usr/include/mpich-x86_64")
+        mpich_module.write("setenv                  MPI_LIB         /usr/lib64/mpich/lib")
+        mpich_module.write("setenv                  MPI_MAN         /usr/share/man/mpich-x86_64")
+        mpich_module.write("setenv                  MPI_PYTHON_SITEARCH     /usr/lib64/python2.7/site-packages/mpich")
+        mpich_module.write("setenv                  MPI_COMPILER    mpich-x86_64")
+        mpich_module.write("setenv                  MPI_SUFFIX      _mpich")
+        mpich_module.write("setenv                  MPI_HOME        /usr/lib64/mpich")
+        mpich_module.close()
+
+    elif "mvapich" in compilerToolsetSelectedSet:
       gccInstallDir = compiler_toolset_dir+"/gcc-"+gcc_version_default
       if not os.path.exists(gccInstallDir) and not inOptions.skipOp:
         raise Exception("Error, gcc has not been installed yet." \
@@ -756,8 +840,25 @@ def main(cmndLineArgs):
          },
         inOptions
         )
- 
-
+      if not inOptions.skipop:
+                mvapich_module = open(dev_env_dir + "/mvapich-" + mvapich_version, 'w+')
+        mvapich_module.write("conflict mpich")
+        mvapich_module.write("prepend-path            PATH            /usr/lib64/mvapich2/bin")
+        mvapich_module.write("prepend-path            LD_LIBRARY_PATH /usr/lib64/mvapich2/lib")
+        mvapich_module.write("prepend-path            PYTHONPATH      /usr/lib64/python2.7/site-packages/mvapich2")
+        mvapich_module.write("prepend-path            MANPATH         /usr/share/man/mvapich2-x86_64")
+        mvapich_module.write("prepend-path            PKG_CONFIG_PATH /usr/lib64/mvapich2/lib/pkgconfig")
+        mvapich_module.write("setenv                  MPI_BIN         /usr/lib64/mvapich2/bin")
+        mvapich_module.write("setenv                  MPI_SYSCONFIG   /etc/mvapich2-x86_64")
+        mvapich_module.write("setenv                  MPI_FORTRAN_MOD_DIR     /usr/lib64/gfortran/modules/mvapich2-x86_64")
+        mvapich_module.write("setenv                  MPI_INCLUDE     /usr/include/mvapich2-x86_64")
+        mvapich_module.write("setenv                  MPI_LIB         /usr/lib64/mvapich2/lib")
+        mvapich_module.write("setenv                  MPI_MAN         /usr/share/man/mvapich2-x86_64")
+        mvapich_module.write("setenv                  MPI_PYTHON_SITEARCH     /usr/lib64/python2.7/site-packages/mvapich2")
+        mvapich_module.write("setenv                  MPI_COMPILER    mvapich2-x86_64")
+        mvapich_module.write("setenv                  MPI_SUFFIX      _mvapich2")
+        mvapich_module.write("setenv                  MPI_HOME        /usr/lib64/mvapich2")
+        mvapich_module.close()
   else:
 
     print("Skipping install of the tools on request!")
@@ -779,8 +880,8 @@ def main(cmndLineArgs):
     print("*** NOTE: --no-op provided, only traced actions that would have been taken!")
     print("***")
   else:
-    os.system("mv load_dev_env.sh " + dev_env_base_dir + "/env")
-    os.system("mv load_dev_env.csh " + dev_env_base_dir + "/env")
+    os.system("mv load_dev_env.sh " + dev_env_dir)
+    os.system("mv load_dev_env.csh " + dev_env_dir)
   
 
   print("installing CMake target for vera_tpls")
