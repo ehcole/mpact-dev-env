@@ -616,13 +616,12 @@ def main(cmndLineArgs):
   dev_env_exists = os.path.exists(dev_env_dir)
 
   if inOptions.doInitialSetup:
-    if not dev_env_exists and not inOptions.skipOp:
-      os.makedirs(dev_env_dir)
     if not dev_env_base_exists:
       print("Creating directory '" + dev_env_base_dir + "' ...")
       if not inOptions.skipOp:
         os.makedirs(dev_env_base_dir)
-
+    if not dev_env_exists and not inOptions.skipOp:
+      os.makedirs(dev_env_dir)
     if not common_tools_exists:
       print("Creating directory '" + common_tools_dir + "' ...")
       if not inOptions.skipOp:
@@ -744,7 +743,7 @@ def main(cmndLineArgs):
 
     if "gcc" in compilerToolsetSelectedSet:
       print("unpacking gcc-" + gcc_version + ".tar.gz...")
-      #os.system("tar xzf gcc-" + gcc_version + ".tar.gz")
+      os.system("tar xzf gcc-" + gcc_version + ".tar.gz")
       os.chdir("gcc-" + gcc_version)
       print("downloading gcc prerequisites...")
       os.system("pwd")
