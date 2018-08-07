@@ -44,10 +44,10 @@ import sys
 # Defaults
 #
 mvapichBaseName = "mvapich2"
-mvapichDefaultVersion="2.0"
-mvapichSupportedVersions = ["2.0", "2.0"]
+mvapichDefaultVersion="2.3"
+mvapichSupportedVersions = ["2.3", "2.3"]
 mvapichTarballVersions = {
-  "2.0" : "2.0"
+  "2.3" : "2.3"
   }
 for arg in sys.argv[1:]:
   if "version" in arg and "mvapich" in arg:

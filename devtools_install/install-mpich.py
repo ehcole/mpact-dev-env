@@ -45,10 +45,10 @@ import sys
 #
 mpichBaseName = "mpich"
 mpichDefaultVersion="3.1.3"
-mpichSupportedVersions = ["3.2.1", "3.3.0"]
+mpichSupportedVersions = ["3.1.3", "3.2.1"]
 mpichTarballVersions = {
-  "3.2.1" : "3.2.1",
-  "3.3.0" : "3.3.0"
+  "3.1.3" : "3.1.3",
+  "3.2.1" : "3.2.1"
   }
 for arg in sys.argv[1:]:
   if "version" in arg and "mpich" in arg:

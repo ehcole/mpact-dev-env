@@ -63,7 +63,6 @@ cmake_version_default = "3.3.2"
 gcc_version_default = "4.8.3"
 mpich_version_default = "3.2.1"
 mvapich_version_default = "2.3"
-mvapichInstalled = False
 
 # Common (compile independent) tools
 commonToolsArray = [ "gitdist", "autoconf", "cmake" ]
@@ -407,7 +406,7 @@ def getToolsSelectedArray(toolsSelectedStr, validToolsArray):
     if not toolName.split(':')[0] in validToolsArraySet:
       raise Exception("Error, '"+toolName+"' is not one of" \
         " '"+(",".join(validToolsArray))+"'")
-    toolsArray.append(toolName)
+    toolsArray.append(toolName.split(':')[0])
   return toolsArray
 
 
@@ -448,16 +447,19 @@ def assertInstallDirExists(dirPath, inOptions):
 #
 # Write the files load_dev_env.[sh,csh]
 #
-def writeLoadDevEnvFiles(devEnvBaseDir, compilersToolsetBaseDir, inOptions):
+def writeLoadDevEnvFiles(devEnvBaseDir, compilersToolsetBaseDir, inOptions, versionList, mvapichInstalled):
 
   subPairArray = [
     ("@DEV_ENV_BASE@", devEnvBaseDir),
-    ("@CMAKE_VERSION@", cmake_version_default),
-    ("@AUTOCONF_VERSION@", autoconf_version_default),
-    ("@GCC_VERSION@", gcc_version_default),
-    ("@MPICH_VERSION@", mpich_version_default),
-    ("@MVAPICH_VERSION@", mvapich_version_default)
-    ]
+    ("@CMAKE_VERSION@", versionList["cmake"]),
+    ("@AUTOCONF_VERSION@", versionList["autoconf"]),
+    ("@GCC_VERSION@", versionList["gcc"])]
+  if mvapichInstalled:
+    subPairArray.append(("@MVAPICH_VERSION@", versionList["mvapich"]))
+  else:
+    subPairArray.append(("@MPICH_VERSION@", versionList["mpich"])),
+
+    
 
   load_dev_env_base = inOptions.loadDevEnvFileBaseName
 
@@ -550,25 +552,33 @@ def main(cmndLineArgs):
   #
   autoconf_version = autoconf_version_default
   cmake_version = cmake_version_default
-  gcc_version = cmake_version_default
+  gcc_version = gcc_version_default
   mpich_version = mpich_version_default
   mvapich_version = mvapich_version_default
+  mvapichInstalled = False
   #iterates over tools selected. If name is specified and a ':' is present, non-default version was specified. Updating install version to specified value
   #if no version was specified, default version will be installed
   inOptions = getCmndLineOptions(cmndLineArgs)
-  for toolName in inOptions.commonTools:
+  versionList = dict()
+  for toolName in inOptions.commonTools.split(','):
     if "cmake" in toolName and ':' in toolName:
       cmake_version = toolName.split(':')[1]
     elif "autoconf" in toolName and ':' in toolName:
       autoconf_version = toolName.split(':')[1]
-  for toolName in inOptions.compilerToolset:
+  for toolName in inOptions.compilerToolset.split(','):
     if "gcc" in toolName and ':' in toolName:
-      gcc_version = toolName.split(':')[1]
+      gcc_version = toolName.split(':')[1]      
     elif "mpich" in toolName and ':' in toolName:
-      mpich_version = toolName.split(':')[1]
+      mpich_version = toolName.split(':')[1]      
     elif "mvapich" in toolName and ':' in toolName:
       mvapich_version = toolName.split(':')[1]
       mvapichInstalled = True
+      
+  versionList["cmake"] = cmake_version
+  versionList["autoconf"] = autoconf_version
+  versionList["gcc"] = gcc_version
+  versionList["mpich"] = mpich_version
+  versionList["mvapich"] = mvapich_version
   if inOptions.skipOp:
     print("\n***")
     print("*** NOTE: --no-op provided, will only trace actions and not touch the filesystem!")
@@ -584,8 +594,6 @@ def main(cmndLineArgs):
   print("\nSelected compiler toolset = " + str(compilerToolsetSelected))
   compilerToolsetSelectedSet = set(compilerToolsetSelected)
 
-  gccVersion=gcc_version_default #ToDo: Make variable!
-
   dev_env_base_dir = inOptions.installDir
 
   ###
@@ -598,7 +606,7 @@ def main(cmndLineArgs):
   common_tools_dir = os.path.join(dev_env_base_dir, "common_tools")
   common_tools_exists = os.path.exists(common_tools_dir)
 
-  compiler_toolset_base_dir = os.path.join(dev_env_base_dir, "gcc-"+gccVersion)
+  compiler_toolset_base_dir = os.path.join(dev_env_base_dir, "gcc-"+gcc_version)
   compiler_toolset_base_exists = os.path.exists(compiler_toolset_base_dir)
 
   compiler_toolset_dir = os.path.join(compiler_toolset_base_dir, "toolset")
@@ -634,7 +642,7 @@ def main(cmndLineArgs):
     print("Writing new files " + inOptions.loadDevEnvFileBaseName +
           ".[sh,csh] ...")
     if not inOptions.skipOp:
-      writeLoadDevEnvFiles(dev_env_base_dir, compiler_toolset_base_dir, inOptions)
+      writeLoadDevEnvFiles(dev_env_base_dir, compiler_toolset_base_dir, inOptions, versionList, mvapichInstalled)
 
   else:
 
@@ -656,9 +664,10 @@ def main(cmndLineArgs):
         print("Downloading the source for cmake-" + cmake_version + " ...")
         print("")
         if not inOptions.skipOp:
-          os.system("wget -p " + dev_env_base_dir + "/common_tools https://cmake.org/files/v3.3/cmake-" + cmake_version + ".tar.gz")
+          os.system("wget https://cmake.org/files/v3.3/cmake-" + cmake_version + ".tar.gz")
+          os.system("mv cmake-" + cmake_version + ".tar.gz " + common_tools_dir)
         else:
-          print("wget -p " + dev_env_base_dir + "/common_tools https://cmake.org/files/v3.3/cmake-" + cmake_version + ".tar.gz")
+          print("wget " + dev_env_base_dir + "/common_tools https://cmake.org/files/v3.3/cmake-" + cmake_version + ".tar.gz")
       elif "autoconf" in tool:
         downloadToolSource("autoconf", autoconf_version,
           inOptions.sourceGitUrlBase, inOptions)
@@ -668,26 +677,30 @@ def main(cmndLineArgs):
         print("Downloading the source for gcc-" + gcc_version + " ...")
         print("")
         if not inOptions.skipOp:
-          os.system("wget -p " + scratch_dir + " https://ftp.gnu.org/gnu/gcc/gcc-" + gcc_version + "/gcc-" + gcc_version + ".tar.gz")
+          os.system("wget https://ftp.gnu.org/gnu/gcc/gcc-" + gcc_version + "/gcc-" + gcc_version + ".tar.gz")
         else:
-          print("wget -p " + scratch_dir + " https://ftp.gnu.org/gnu/gcc/gcc-" + gcc_version + "/gcc-" + gcc_version + ".tar.gz")
+          print("wget https://ftp.gnu.org/gnu/gcc/gcc-" + gcc_version + "/gcc-" + gcc_version + ".tar.gz")
 
       elif "mpich" in tool:
-        print("")
-        print("Downloading the source for mpich-" + mpich_version + " ..")
-        print("")
-        if not inOptions.skipOp:
-          os.system("wget -p " + scratch_dir + "/ http://www.mpich.org/static/downloads/" + mpich_version + "/mpich-" + mpich_version + ".tar.gz")
+        if mpich_version = '3.1.3':
+          downloadToolSource("mpich", mpich_version,
+                             inOptions.sourceGitUrlBase, inOptions)
         else:
-          print("wget -p " + scratch_dir + "/ http://www.mpich.org/static/downloads/" + mpich_version + "/mpich-" + mpich_version + ".tar.gz")
+          print("")
+          print("Downloading the source for mpich-" + mpich_version + " ..")
+          print("")
+          if not inOptions.skipOp:
+            os.system("wget / http://www.mpich.org/static/downloads/" + mpich_version + "/mpich-" + mpich_version + ".tar.gz")
+          else:
+            print("wget http://www.mpich.org/static/downloads/" + mpich_version + "/mpich-" + mpich_version + ".tar.gz")
       elif "mvapich" in tool:
         print("")
         print("Downloading the source for mvapich-" + mvapich_version + " ..")
         print("")
         if not inOptions.skipOp:
-          os.system("wget -p " + scratch_dir + "/ http://mvapich.cse.ohio-state.edu/download/mvapich/mv2/mvapich2-" + mvapich_version + ".2.3.tar.gz")
+          os.system("wget http://mvapich.cse.ohio-state.edu/download/mvapich/mv2/mvapich2-" + mvapich_version + ".tar.gz")
         else:
-          print("wget -p " + scratch_dir + "/ http://mvapich.cse.ohio-state.edu/download/mvapich/mv2/mvapich2-" + mvapich_version + ".2.3.tar.gz")
+          print("wget/ http://mvapich.cse.ohio-state.edu/download/mvapich/mv2/mvapich2-" + mvapich_version + ".tar.gz")
   else:
 
     print("Skipping download of the source for the tools on request!")
@@ -697,7 +710,6 @@ def main(cmndLineArgs):
   ###
   print("\n\nC) Untar, configure, build and install each selected tool:\n")
   ###
-
   if inOptions.doInstall:
 
     if "gitdist" in commonToolsSelectedSet:
@@ -706,18 +718,18 @@ def main(cmndLineArgs):
       InstallProgramDriver.fixupInstallPermissions(inOptions, common_tools_dir)
 
     if "cmake" in commonToolsSelectedSet:
-      installToolFromSource("cmake", cmake_version_default,
-        common_tools_dir, None, inOptions )
+      os.system("tar -xvf " + common_tools_dir + "/cmake-3.3.2.tar.gz")
       os.system("yum install openssl-devel")
       if not inOptions.skipOp:
         try:
-          os.system("cmake . -DCMAKE_USE_OPENSSL=ON -DCMAKE_INSTALL_PREFIX=" + dev_env_base_dir + "/common_tools/cmake-" + cmake_version + "/")
+          os.system("cmake " + common_tools_dir + " -DCMAKE_USE_OPENSSL=ON -DCMAKE_INSTALL_PREFIX=" + dev_env_base_dir + "/common_tools/cmake-" + cmake_version + "/")
         except:
           os.system("cmake . -DCMAKE_INSTALL_PREFIX=" + dev_env_base_dir + "/common_tools/cmake-" + cmake_version + "/")
         os.system("make -j8 install")
+        os.system("cd ..")
         cmake_module = open(dev_env_dir + "/cmake-" + cmake_version, 'w+')
         cmake_module.write("#%Module\n\n")
-        cmake_module.write("set version " + cmake-version)
+        cmake_module.write("set version " + cmake_version)
         cmake_module.write('set name "MPACT Development Environment - 2.1.0"')
         cmake_module.write('set msg "Loads the development environment for MPACT."')
         cmake_module.write('')
@@ -731,8 +743,20 @@ def main(cmndLineArgs):
         common_tools_dir, None, inOptions )
 
     if "gcc" in compilerToolsetSelectedSet:
-      installToolFromSource("gcc", gcc_version_default,
-        compiler_toolset_dir, None, inOptions )
+      print("unpacking gcc-" + gcc_version + ".tar.gz...")
+      #os.system("tar xzf gcc-" + gcc_version + ".tar.gz")
+      os.chdir("gcc-" + gcc_version)
+      print("downloading gcc prerequisites...")
+      os.system("pwd")
+      os.system("./contrib/download_prerequisites")
+      os.chdir(compiler_toolset_base_dir)
+      print("configuring gcc...")
+      print(dev_env_base_dir)
+      os.system(scratch_dir + "/gcc-" + gcc_version + "/configure --prefix=$HOME/GCC-4.6.2 --enable-languages=c,c++,fortran,go")
+      print("building gcc...")
+      os.system("make -j8")
+      os.system("make install")
+      os.chdir(scratch_dir)
       if not inOptions.skipOp:
         gcc_module = open(dev_env_dir + "/gcc-" + gcc_version, 'w+')
         gcc_module.write("#%module\n\n")
@@ -784,14 +808,14 @@ def main(cmndLineArgs):
         gcc_module.close()
         
     if "mpich" in compilerToolsetSelectedSet:
-      gccInstallDir = compiler_toolset_dir+"/gcc-"+gcc_version_default
+      gccInstallDir = compiler_toolset_dir+"/gcc-"+gcc_version
       if not os.path.exists(gccInstallDir) and not inOptions.skipOp:
         raise Exception("Error, gcc has not been installed yet." \
           "  Missing directory '"+gccInstallDir+"'") 
       LD_LIBRARY_PATH = os.environ.get("LD_LIBRARY_PATH", "")
       installToolFromSource(
         "mpich",
-        mpich_version_default,
+        mpich_version,
         compiler_toolset_dir,
         {
           "CC" : gccInstallDir+"/bin/gcc",
@@ -822,14 +846,14 @@ def main(cmndLineArgs):
         mpich_module.close()
 
     elif "mvapich" in compilerToolsetSelectedSet:
-      gccInstallDir = compiler_toolset_dir+"/gcc-"+gcc_version_default
+      gccInstallDir = compiler_toolset_dir+"/gcc-"+gcc_version
       if not os.path.exists(gccInstallDir) and not inOptions.skipOp:
         raise Exception("Error, gcc has not been installed yet." \
           "  Missing directory '"+gccInstallDir+"'") 
       LD_LIBRARY_PATH = os.environ.get("LD_LIBRARY_PATH", "")
       installToolFromSource(
         "mvapich",
-        mvapich_version_default,
+        mvapich_version,
         compiler_toolset_dir,
         {
           "CC" : gccInstallDir+"/bin/gcc",
