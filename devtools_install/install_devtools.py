@@ -718,10 +718,11 @@ def main(cmndLineArgs):
 
     if "cmake" in commonToolsSelectedSet:
       os.system("tar -xvf " + common_tools_dir + "/cmake-3.3.2.tar.gz")
+      os.system("mv -f cmake-" + cmake_version + " " + common_tools_dir)
       os.system("yum install openssl-devel")
       if not inOptions.skipOp:
         try:
-          os.system("cmake " + common_tools_dir + " -DCMAKE_USE_OPENSSL=ON -DCMAKE_INSTALL_PREFIX=" + dev_env_base_dir + "/common_tools/cmake-" + cmake_version + "/")
+          os.system("cmake " + common_tools_dir + "/cmake-" + cmake_version + " -DCMAKE_USE_OPENSSL=ON -DCMAKE_INSTALL_PREFIX=" + dev_env_base_dir + "/common_tools/cmake-" + cmake_version + "/")
         except:
           os.system("cmake . -DCMAKE_INSTALL_PREFIX=" + dev_env_base_dir + "/common_tools/cmake-" + cmake_version + "/")
         os.system("make -j8 install")
@@ -751,7 +752,7 @@ def main(cmndLineArgs):
       os.chdir(compiler_toolset_base_dir)
       print("configuring gcc...")
       print(dev_env_base_dir)
-      os.system(scratch_dir + "/gcc-" + gcc_version + "/configure --prefix=$HOME/GCC-4.6.2 --enable-languages=c,c++,fortran,go")
+      os.system(scratch_dir + "/gcc-" + gcc_version + "/configure --prefix=$HOME/GCC-4.6.2 --enable-languages=c,c++,fortran")
       print("building gcc...")
       os.system("make -j8")
       os.system("make install")
