@@ -70,7 +70,7 @@ commonToolsArray = [ "gitdist", "autoconf", "cmake" ]
 commonToolsChoices = (["all"] + commonToolsArray + [""])
 
 # Compiler toolset
-compilerToolsetArray = [ "gcc", "mpich", "mvapich" ];
+compilerToolsetArray = [ "gcc", "mpich", "mvapich" ]
 compilerToolsetChoices = (["all"] + compilerToolsetArray + [""])
 
 
@@ -455,7 +455,7 @@ def writeLoadDevEnvFiles(devEnvBaseDir, compilersToolsetBaseDir, inOptions):
     ("@CMAKE_VERSION@", cmake_version_default),
     ("@AUTOCONF_VERSION@", autoconf_version_default),
     ("@GCC_VERSION@", gcc_version_default),
-    ("@MPICH_VERSION@", mpich_version_default)
+    ("@MPICH_VERSION@", mpich_version_default),
     ("@MVAPICH_VERSION@", mvapich_version_default)
     ]
 
@@ -569,12 +569,11 @@ def main(cmndLineArgs):
     elif "mvapich" in toolName and ':' in toolName:
       mvapich_version = toolName.split(':')[1]
       mvapichInstalled = True
-  print(cmake_version)
   if inOptions.skipOp:
     print("\n***")
     print("*** NOTE: --no-op provided, will only trace actions and not touch the filesystem!")
     print("***\n")
-
+  
   commonToolsSelected = \
     getToolsSelectedArray(inOptions.commonTools, commonToolsArray)
   print("\nSelected common tools = " + str(commonToolsSelected))
@@ -841,7 +840,7 @@ def main(cmndLineArgs):
         inOptions
         )
       if not inOptions.skipop:
-                mvapich_module = open(dev_env_dir + "/mvapich-" + mvapich_version, 'w+')
+        mvapich_module = open(dev_env_dir + "/mvapich-" + mvapich_version, 'w+')
         mvapich_module.write("conflict mpich")
         mvapich_module.write("prepend-path            PATH            /usr/lib64/mvapich2/bin")
         mvapich_module.write("prepend-path            LD_LIBRARY_PATH /usr/lib64/mvapich2/lib")
