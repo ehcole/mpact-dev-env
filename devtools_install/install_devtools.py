@@ -682,7 +682,7 @@ def main(cmndLineArgs):
           print("wget https://ftp.gnu.org/gnu/gcc/gcc-" + gcc_version + "/gcc-" + gcc_version + ".tar.gz")
 
       elif "mpich" in tool:
-        if mpich_version = '3.1.3':
+        if mpich_version == '3.1.3':
           downloadToolSource("mpich", mpich_version,
                              inOptions.sourceGitUrlBase, inOptions)
         else:
