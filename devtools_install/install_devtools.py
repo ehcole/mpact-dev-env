@@ -749,7 +749,7 @@ def main(cmndLineArgs):
       print("downloading gcc prerequisites...")
       os.system("./contrib/download_prerequisites")      
       os.chdir(compiler_toolset_dir)
-      os.system("gcc-" + gcc_version)
+      os.system("mkdir gcc-" + gcc_version)
       os.chdir("gcc-" + gcc_version)
       print("configuring gcc...")
       os.system(scratch_dir + "/gcc-" + gcc_version + "/configure --disable-multilib --prefix=$HOME/GCC-" + gcc_version + " --enable-languages=c,c++,fortran")
