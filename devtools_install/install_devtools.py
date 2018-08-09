@@ -852,7 +852,7 @@ def main(cmndLineArgs):
           "  Missing directory '"+gccInstallDir+"'") 
       LD_LIBRARY_PATH = os.environ.get("LD_LIBRARY_PATH", "")
       installToolFromSource(
-        "mvapich",
+        "mvapich2",
         mvapich_version,
         compiler_toolset_dir,
         {
