@@ -249,7 +249,6 @@ def getCmndLineOptions(cmndLineArgs, skipEchoCmndLine=False):
   from optparse import OptionParser
   
   clp = OptionParser(usage=usageHelp)
-
   clp.add_option(
     "--install-dir", dest="installDir", type="string", default="",
     help="The base directory <dev_env_base> that will be used for the install." \
@@ -323,6 +322,8 @@ def getCmndLineOptions(cmndLineArgs, skipEchoCmndLine=False):
     "--do-all", dest="doAll", action="store_true", default=False,
     help="[AGGR ACTION] Do everything.  Implies --initial-setup --downlaod" \
       +" --install --show-final-instructions")
+  clp.add_option("-m", "--mkl", action="store_true", dest="mkl_true", default=False, help="Enable to install tpls with intel-mkl rather than blas-lapack. Default is vera tpls")
+  clp.add_option("-b", "--build-image", action="store_true", dest="build_image", default=False, help="Enable to build a docker image from the configured docker file. Default is false")
 
   (options, args) = clp.parse_args(args=cmndLineArgs)
 
@@ -905,7 +906,6 @@ def main(cmndLineArgs):
   else:
     os.system("mv load_dev_env.sh " + dev_env_dir)
     os.system("mv load_dev_env.csh " + dev_env_dir)
-  
 
   print("installing CMake target for vera_tpls")
   if not inOptions.skipOp:
@@ -913,6 +913,32 @@ def main(cmndLineArgs):
     os.system("git submodule add https://github.com/CASL/vera_tpls" + dev_env_base_dir + "/tpls")
   else:
     print("git submodule add https://github.com/CASL/vera_tpls" + dev_env_base_dir + "/tpls")
+    print("configuring Dockerfile")
+  if not inOptions.skipOp:
+    os.system("mkdir " + dev_env_base_dir + "/images")
+    gcc_first = gcc_version[0]
+    gcc_short = str()
+    for chr in gcc_version:
+      if chr != '.':
+        gcc_short += chr
+    if mvapichInstalled:
+      mpi_version = "mvapich2-" + mvapich_version
+    else:
+      mpi_version = "mpich-" + mpich_version
+    if inOptions.mkl_true:
+      mkl_true = "true"
+      tpl_url = 'https://github.com/ehcole/MPACT_tpls.git'
+      tpl_source_dir = "/MPACT_tpls/TPL_build/"
+    else:
+      mkl_true = "false"
+      tpl_url = "https://github.com/CASL/vera_tpls.git"
+      tpl_source_dir = "/vera_tpls/TPL_build/"
+    os.system("autoconf")
+    os.system("./configure GCC_VERSION=gcc_version GCC_FIRST=gcc_first GCC_SHORT=gcc_short MPI_VERSION=gcc_first CMAKE_VERSION=cmake_version TPL_URL=tpl_url TPL_SOURCE_DIR=tpl_source_dir MKL_TRUE=mkl_true")
+    os.system("mv Dockerfile " + dev_env_base_dir + "/images")
+    if inOptions.build_image:
+      print("building docker image")
+      os.system("docker build -t test-mpact-dev-env " + dev_env_base_dir + "/images")
   print("\n[End]")
 
 
