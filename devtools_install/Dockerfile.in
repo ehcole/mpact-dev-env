@@ -1,17 +1,17 @@
 FROM centos:7
 ARG NPROC=2
+ARG MKL_TRUE=@MKL_TRUE@
 WORKDIR /scratch
-GCC_VERSION=gcc-@GCC_VERSION@ \
-GCC_FIRST=@GCC_FIRST@
-GCC_SHORT=@GCC_SHORT@
+ENV GCC_VERSION=gcc-@GCC_VERSION@ \
+GCC_FIRST=@GCC_FIRST@ \
+GCC_SHORT=@GCC_SHORT@ \
 PYTHON_3=/etc/modulefiles/python-anaconda3/3.6.4                \
 CMAKE=/etc/modulefiles/cmake/@CMAKE_VERSION@  \
 MPI_VERSION=@MPI_VERSION@  \
-ARG MKL_TRUE=@MKL_TRUE@
 VERA_TPL_INSTALL_DIR=/opt/mpact-dev-env/gcc-@GCC_VERSION@/tpls/ \
-TPL_SOURCE_DIR=@TPL_SOURCE_DIR@
-TPL_SOURCE_URL=@TPL_URL@
-FINISH_BUILD=/scratch/finishBuild.sh
+TPL_SOURCE_DIR=@TPL_SOURCE_DIR@ \
+TPL_SOURCE_URL=@TPL_URL@ \
+FINISH_BUILD=/scratch/finishBuild.sh 
 RUN yum install -y epel-release && yum repolist       		&&  \ 
 yum update -y                                       		&&  \ 
 yum-config-manager --add-repo https://yum.repos.intel.com/setup/intelproducts.repo && \ 
