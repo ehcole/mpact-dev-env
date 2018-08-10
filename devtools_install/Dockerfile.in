@@ -154,7 +154,8 @@ if [ "x$MKL_TRUE" = "true" ] ; \
    echo 'setenv          MKL_INCLUDE     /opt/intel/mkl/include' >> ${MKL}     && \ 
    echo 'setenv          MKL_LIB /opt/intel/mkl/lib/intel64' >> ${MKL}         && \ 
    echo 'prepend-path    LD_LIBRARY_PATH /opt/intel/mkl/lib/intel64' >> ${MKL}         && \ 
-   echo 'prepend-path    LIBRARY_PATH /opt/intel/mkl/lib/intel64' >> ${MKL} && \ 
+   echo 'prepend-path    LIBRARY_PATH /opt/intel/mkl/lib/intel64' >> ${MKL}; \ 
+fi && \
 cd /scratch && \
 git clone @TPL_URL@ && \
 mkdir -p /etc/modulefiles/PrgEnv/mpact-dev/ && \
