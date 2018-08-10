@@ -816,6 +816,8 @@ def main(cmndLineArgs):
         raise Exception("Error, gcc has not been installed yet." \
           "  Missing directory '"+gccInstallDir+"'") 
       LD_LIBRARY_PATH = os.environ.get("LD_LIBRARY_PATH", "")
+      mpichDir = gccInstallDir + "/toolset/mpich-" + mpich_version
+      os.system("mkdir -p " + mpichDir)
       installToolFromSource(
         "mpich",
         mpich_version,
@@ -824,7 +826,7 @@ def main(cmndLineArgs):
           "CC" : gccInstallDir+"/bin/gcc",
           "CXX" : gccInstallDir+"/bin/g++",
           "FC" : gccInstallDir+"/bin/gfortran",
-          "LD_LIBRARY_PATH" : gccInstallDir+"/lib64:"+LD_LIBRARY_PATH
+          "LD_LIBRARY_PATH" : mpichDir+"/lib64:"+LD_LIBRARY_PATH
          },
         inOptions
         )
@@ -854,11 +856,13 @@ def main(cmndLineArgs):
         raise Exception("Error, gcc has not been installed yet." \
           "  Missing directory '"+gccInstallDir+"'") 
       LD_LIBRARY_PATH = os.environ.get("LD_LIBRARY_PATH", "")
+      mvapichDir = gccInstallDir + "/toolset/mvapich-" + mvapich_version
+      os.system("mkdir -p " + mvapichDir)
       if not inOptions.skipop:
         os.system("yum install libibverbs")
         os.system("gzip -dc mvapich2-" + mvapich_version + ".tar.gz | tar -x")
         os.chdir("mvapich2-" + mvapich_version)
-        os.system("./configure --prefix " + compiler_toolset_dir)
+        os.system("./configure --prefix " + mvapichDir)
         os.system("make -j8")
         os.system("make install")
         mvapich_module = open(dev_env_dir + "/mvapich-" + mvapich_version, 'w+')
@@ -880,7 +884,6 @@ def main(cmndLineArgs):
         mvapich_module.write("setenv                  MPI_HOME        /usr/lib64/mvapich2")
         mvapich_module.close()
   else:
-
     print("Skipping install of the tools on request!")
 
   ###
