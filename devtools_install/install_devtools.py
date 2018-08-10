@@ -318,12 +318,14 @@ def getCmndLineOptions(cmndLineArgs, skipEchoCmndLine=False):
     default=False,
     help="[ACTION] Show final instructions for using the installed dev env." )
 
+  clp.add_option("-m", "--mkl", action="store_true", dest="mkl_true", default=False, help="Enable to install tpls with intel-mkl rather than blas-lapack. Default is vera tpls")
+
+  clp.add_option("-b", "--build-image", action="store_true", dest="build_image", default=False, help="Enable to build a docker image from the configured docker file. Default is false")
+
   clp.add_option(
     "--do-all", dest="doAll", action="store_true", default=False,
     help="[AGGR ACTION] Do everything.  Implies --initial-setup --downlaod" \
       +" --install --show-final-instructions")
-  clp.add_option("-m", "--mkl", action="store_true", dest="mkl_true", default=False, help="Enable to install tpls with intel-mkl rather than blas-lapack. Default is vera tpls")
-  clp.add_option("-b", "--build-image", action="store_true", dest="build_image", default=False, help="Enable to build a docker image from the configured docker file. Default is false")
 
   (options, args) = clp.parse_args(args=cmndLineArgs)
 
@@ -852,19 +854,15 @@ def main(cmndLineArgs):
         raise Exception("Error, gcc has not been installed yet." \
           "  Missing directory '"+gccInstallDir+"'") 
       LD_LIBRARY_PATH = os.environ.get("LD_LIBRARY_PATH", "")
-      installToolFromSource(
-        "mvapich2",
-        mvapich_version,
-        compiler_toolset_dir,
-        {
-          "CC" : gccInstallDir+"/bin/gcc",
-          "CXX" : gccInstallDir+"/bin/g++",
-          "FC" : gccInstallDir+"/bin/gfortran",
-          "LD_LIBRARY_PATH" : gccInstallDir+"/lib64:"+LD_LIBRARY_PATH
-         },
-        inOptions
         )
       if not inOptions.skipop:
+        os.system("yum install libibverbs")
+        os.system("gzip -dc mvapich2-" + mvapich_version + ".tar.gz | tar -x")
+        os.chdir("mvapich2-" + mvapich_version)
+        os.system("./configure --prefix " + compiler_toolset_dir)
+        os.chdir(compiler_toolset_dir)
+        os.system("make -j8")
+        os.system("maje install")
         mvapich_module = open(dev_env_dir + "/mvapich-" + mvapich_version, 'w+')
         mvapich_module.write("conflict mpich")
         mvapich_module.write("prepend-path            PATH            /usr/lib64/mvapich2/bin")
