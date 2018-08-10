@@ -854,7 +854,6 @@ def main(cmndLineArgs):
         raise Exception("Error, gcc has not been installed yet." \
           "  Missing directory '"+gccInstallDir+"'") 
       LD_LIBRARY_PATH = os.environ.get("LD_LIBRARY_PATH", "")
-        )
       if not inOptions.skipop:
         os.system("yum install libibverbs")
         os.system("gzip -dc mvapich2-" + mvapich_version + ".tar.gz | tar -x")
