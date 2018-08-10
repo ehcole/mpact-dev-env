@@ -886,14 +886,6 @@ def main(cmndLineArgs):
   ###
   print("\n\nD) Final instructions for using installed dev env:")
   ###
-    
-  if inOptions.showFinalInstructions:
-    print("\nTo use the new dev env, just source the file:\n")
-    print("  source " + dev_env_base_dir + "/env/load_dev_env.sh\n")
-    print("for sh or bash shells (or load_dev_env.csh for csh shell).\n")
-    print("TIP: Add this source to your ~/.bash_profile!")
-  else:
-    print("Skipping on request ...")
 
   if inOptions.skipOp:
     print("\n***")
@@ -942,6 +934,14 @@ def main(cmndLineArgs):
     if inOptions.build_image:
       print("building docker image")
       os.system("docker build -t test-mpact-dev-env " + dev_env_base_dir + "/images")
+      
+  if inOptions.showFinalInstructions:
+    print("\nTo use the new dev env, just source the file:\n")
+    print("  source " + dev_env_base_dir + "/env/load_dev_env.sh\n")
+    print("for sh or bash shells (or load_dev_env.csh for csh shell).\n")
+    print("TIP: Add this source to your ~/.bash_profile!")
+  else:
+    print("Skipping on request ...")
   print("\n[End]")
 
 
