@@ -860,7 +860,6 @@ def main(cmndLineArgs):
         os.system("gzip -dc mvapich2-" + mvapich_version + ".tar.gz | tar -x")
         os.chdir("mvapich2-" + mvapich_version)
         os.system("./configure --prefix " + compiler_toolset_dir)
-        os.chdir(compiler_toolset_dir)
         os.system("make -j8")
         os.system("maje install")
         mvapich_module = open(dev_env_dir + "/mvapich-" + mvapich_version, 'w+')
@@ -908,10 +907,17 @@ def main(cmndLineArgs):
   print("installing CMake target for vera_tpls")
   if not inOptions.skipOp:
     os.system("mkdir " + dev_env_base_dir + "/tpls")
-    os.system("git submodule add https://github.com/CASL/vera_tpls" + dev_env_base_dir + "/tpls")
+    os.chdir("..")
+    os.system("git submodule add https://github.com/CASL/vera_tpls")
+    os.system("git submodule init && git submodule update")
+    os.chdir(dev_env_base_dir + "/tpls")
+    os.system("cmake " + scratch_dir + "/../vera_tpls/TPL_build")
+    os.system("make -j8")
+    os.system("make install")
   else:
-    print("git submodule add https://github.com/CASL/vera_tpls" + dev_env_base_dir + "/tpls")
-    print("configuring Dockerfile")
+    print("git submodule add https://github.com/CASL/vera_tpls")
+    print("git submodule init && git submodule update")
+  print("configuring Dockerfile")
   if not inOptions.skipOp:
     os.system("mkdir " + dev_env_base_dir + "/images")
     gcc_first = gcc_version[0]
@@ -932,7 +938,7 @@ def main(cmndLineArgs):
       tpl_url = "https://github.com/CASL/vera_tpls.git"
       tpl_source_dir = "/vera_tpls/TPL_build/"
     os.system("autoconf")
-    os.system("./configure GCC_VERSION=gcc_version GCC_FIRST=gcc_first GCC_SHORT=gcc_short MPI_VERSION=gcc_first CMAKE_VERSION=cmake_version TPL_URL=tpl_url TPL_SOURCE_DIR=tpl_source_dir MKL_TRUE=mkl_true")
+    os.system("./configure GCC_VERSION=gcc_version GCC_FIRST=gcc_first GCC_SHORT=gcc_short MPI_VERSION=MPI_VERSION CMAKE_VERSION=cmake_version TPL_URL=tpl_url TPL_SOURCE_DIR=tpl_source_dir MKL_TRUE=mkl_true")
     os.system("mv Dockerfile " + dev_env_base_dir + "/images")
     if inOptions.build_image:
       print("building docker image")
