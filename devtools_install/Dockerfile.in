@@ -163,7 +163,7 @@ cd /etc/modulefiles/PrgEnv/mpact-dev/ && \
 touch gcc-@GCC_VERSION@ && \
 echo "#%Module" >> ${GCC_VERSION} && \
 echo  >> ${GCC_VERSION} && \
-echo "set root ${DEVTOOL_INSTALL_DIR}" >> ${GCC_VERSION} && \
+echo "set root /opt/mpact-dev-env" >> ${GCC_VERSION} && \
 echo  "set version ${GCC_VERSION}" >> ${GCC_VERSION} && \
 echo "set tpldir ${VERA_TPL_INSTALL_DIR}" >> ${GCC_VERSION} && \
 echo >> ${GCC_VERSION} && \
