@@ -910,8 +910,8 @@ def main(cmndLineArgs):
     os.chdir("..")
     os.system("git submodule add https://github.com/CASL/vera_tpls")
     os.system("git submodule init && git submodule update")
-    os.chdir(dev_env_base_dir + "/tpls")
-    os.system("cmake " + scratch_dir + "/../vera_tpls/TPL_build")
+    os.chdir(scratch_dir)
+    os.system('cmake  -D CMAKE_INSTALL_PREFIX=' + dev_env_base_dir + '/tpls -D CMAKE_BUILD_TYPE=Release  -D CMAKE_CXX_COMPILER=mpicxx  -D CMAKE_C_COMPILER=mpicc  -D CMAKE_Fortran_COMPILER=mpif90  -D FFLAGS="-fPIC -O3"  -D CFLAGS="-fPIC -O3"  -D CXXFLAGS="-fPIC -O3"  -D LDFLAGS=""  -D ENABLE_SHARED=ON  -D PROCS_INSTALL=8 vera_tpls/TPL_build')
     os.system("make -j8")
     os.system("make install")
   else:
