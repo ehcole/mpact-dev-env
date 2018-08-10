@@ -36,9 +36,9 @@ yum install -y wget		&&  \
 yum install -y bzip2	&&  \ 
 yum install openssl-devel	 -y				    &&  \ 
 yum install -y cmake						  &&  \ 
+mkdir -p /opt/mpact-dev-env/common_tools && \
 export PATH=/usr/lib64/@MPI_VERSION@/bin:$PATH &&  \ 
 git clone https://github.com/TriBITSPub/TriBITS.git &&  \ 
-mkdir -p ${DEVTOOL_INSTALL_DIR}/common_tools &&  \ 
 cp -r TriBITS/tribits/python_utils/gitdist  /opt/mpact-dev-env/common_tools/ &&   \ 
 wget https://repo.continuum.io/archive/Anaconda3-5.1.0-Linux-x86_64.sh	 &&  \ 
 (for i in {1..4}; do echo yes; done; echo no) | bash Anaconda3-5.1.0-Linux-x86_64.sh			    	&&  \ 
