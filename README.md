@@ -5,18 +5,31 @@ This repository contains scripts to install the MPACT development environment in
 The installation creates the following directory structure:
 
 <install_dir>/
+
   common_tools/
+  
     autoconf-<autoconf-version>/
+    
     cmake-<cmake-version>/
+    
     gitdist/
+    
   gcc-<gcc-version>/
+  
     load_dev_env.[sh,csh]
+    
     toolset/
+    
       gcc-<gcc-version>/
+      
       mpi-<mpi-version>/
+      
     tpls/
+    
   images/
+  
     dev_env/
+    
     install/
     
 <b>Versioning</b>
