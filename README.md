@@ -31,6 +31,7 @@ The installation creates the following directory structure:
     dev_env/
     
     install/
+
     
 <b>Versioning</b>
 mpact-dev-env-<major_version>.<minor_version>.<patch>-tag
