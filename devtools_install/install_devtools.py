@@ -728,7 +728,7 @@ def main(cmndLineArgs):
         try:
           os.system("cmake " + common_tools_dir + "/cmake-" + cmake_version + " -DCMAKE_USE_OPENSSL=ON -DCMAKE_INSTALL_PREFIX=" + dev_env_base_dir + "/common_tools/cmake-" + cmake_version + "/")
         except:
-          os.system("cmake . -DCMAKE_INSTALL_PREFIX=" + dev_env_base_dir + "/common_tools/cmake-" + cmake_version + "/")
+          os.system("cmake " + common_tools_dir + "/cmake-" + cmake_version + " -DCMAKE_INSTALL_PREFIX=" + dev_env_base_dir + "/common_tools/cmake-" + cmake_version + "/")
         os.system("make -j8 install")
         os.system("cd ..")
         cmake_module = open(dev_env_dir + "/cmake-" + cmake_version, 'w+')
