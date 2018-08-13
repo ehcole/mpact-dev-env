@@ -665,11 +665,12 @@ def main(cmndLineArgs):
         print("")
         print("Downloading the source for cmake-" + cmake_version + " ...")
         print("")
+        cmakeShort = cmake_version[:-2]
         if not inOptions.skipOp:
-          os.system("wget https://cmake.org/files/v3.3/cmake-" + cmake_version + ".tar.gz")
+          os.system("wget https://cmake.org/files/v" + cmakeShort + "/cmake-" + cmake_version + ".tar.gz")
           os.system("mv cmake-" + cmake_version + ".tar.gz " + common_tools_dir)
         else:
-          print("wget " + dev_env_base_dir + "/common_tools https://cmake.org/files/v3.3/cmake-" + cmake_version + ".tar.gz")
+          print("wget " + dev_env_base_dir + "/common_tools https://cmake.org/files/v" + cmakeShort + "/cmake-" + cmake_version + ".tar.gz")
       elif "autoconf" in tool:
         downloadToolSource("autoconf", autoconf_version,
           inOptions.sourceGitUrlBase, inOptions)
@@ -720,7 +721,7 @@ def main(cmndLineArgs):
       InstallProgramDriver.fixupInstallPermissions(inOptions, common_tools_dir)
 
     if "cmake" in commonToolsSelectedSet:
-      os.system("tar -xvf " + common_tools_dir + "/cmake-3.3.2.tar.gz")
+      os.system("tar -xvf " + common_tools_dir + "/cmake-" + cmake_version + ".tar.gz")
       os.system("mv -f cmake-" + cmake_version + " " + common_tools_dir)
       os.system("yum install openssl-devel")
       if not inOptions.skipOp:
