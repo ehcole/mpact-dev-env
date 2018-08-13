@@ -855,7 +855,7 @@ def main(cmndLineArgs):
           "  Missing directory '"+gccInstallDir+"'") 
       LD_LIBRARY_PATH = os.environ.get("LD_LIBRARY_PATH", "")
       mvapichDir = gccInstallDir + "/toolset/mvapich-" + mvapich_version
-      if not inOptions.skipop:
+      if not inOptions.skipOp:
         os.system("yum install libibverbs")
         os.system("gzip -dc mvapich2-" + mvapich_version + ".tar.gz | tar -x")
         os.chdir("mvapich2-" + mvapich_version)
