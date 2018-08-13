@@ -899,8 +899,7 @@ def main(cmndLineArgs):
   print("installing CMake target for vera_tpls")
   if not inOptions.skipOp and inOptions.doInstall:
     os.system("mkdir " + dev_env_base_dir + "/tpls")
-    os.chdir("..")
-    os.system("git submodule add https://github.com/CASL/vera_tpls")
+    os.chdir(scratch_dir + "/..")
     os.system("git submodule init && git submodule update")
     os.chdir(scratch_dir)
     os.system("module load mpi")
