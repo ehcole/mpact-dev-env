@@ -1,0 +1,3 @@
+[submodule "vera_tpls"]
+	path = vera_tpls
+	url = https://github.com/CASL/vera_tpls
