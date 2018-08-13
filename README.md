@@ -1,7 +1,7 @@
 # mpact-dev-env
 <b>Overview</b>
 
-This repository contains scripts to install the MPACT development environment into a specified directory. The following tools are installed, using user-specified versions: autoconf, cmake, gitdist, gcc, mpi (mpich or mvapich). Additionally, the VERA third party libraries (tpls) are included as a submodule and installed. Lastly, a Dockerfile is written and optionally built into a container with an MPACT development environment with SSH access. Installation of VERA tpls requires Python 3.
+This repository contains scripts to install the MPACT development environment into a specified directory. The following tools are installed, using user-specified versions: autoconf, cmake, gitdist, gcc, mpi (mpich or mvapich). Additionally, the VERA third party libraries (tpls) are included as a submodule and installed. Lastly, a Dockerfile is written and optionally built into a container with an MPACT development environment with SSH access. Installation of VERA tpls requires Python 2 and will fail if Python 3 is used.
 
 The installation creates the following directory structure:
 
