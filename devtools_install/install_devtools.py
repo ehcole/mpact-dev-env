@@ -898,6 +898,7 @@ def main(cmndLineArgs):
 
   print("installing CMake target for vera_tpls")
   if not inOptions.skipOp and inOptions.doInstall:
+    
     os.system("mkdir " + dev_env_base_dir + "/tpls")
     os.chdir(scratch_dir + "/..")
     os.system("git submodule init && git submodule update")
@@ -905,10 +906,10 @@ def main(cmndLineArgs):
     os.system("module load mpi")
     os.system('cmake  -D CMAKE_INSTALL_PREFIX=' + dev_env_base_dir + '/tpls -D CMAKE_BUILD_TYPE=Release  -D CMAKE_CXX_COMPILER=mpicxx  -D CMAKE_C_COMPILER=mpicc  -D CMAKE_Fortran_COMPILER=mpif90  -D FFLAGS="-fPIC -O3"  -D CFLAGS="-fPIC -O3"  -D CXXFLAGS="-fPIC -O3"  -D LDFLAGS=""  -D ENABLE_SHARED=ON  -D PROCS_INSTALL=8 ../vera_tpls/TPL_build')
     os.system("make -j8 || make -j8")
-    os.system("make install")
   else:
-    print("git submodule add https://github.com/CASL/vera_tpls")
     print("git submodule init && git submodule update")
+    print('cmake  -D CMAKE_INSTALL_PREFIX=' + dev_env_base_dir + '/tpls -D CMAKE_BUILD_TYPE=Release  -D CMAKE_CXX_COMPILER=mpicxx  -D CMAKE_C_COMPILER=mpicc  -D CMAKE_Fortran_COMPILER=mpif90  -D FFLAGS="-fPIC -O3"  -D CFLAGS="-fPIC -O3"  -D CXXFLAGS="-fPIC -O3"  -D LDFLAGS=""  -D ENABLE_SHARED=ON  -D PROCS_INSTALL=8 ../vera_tpls/TPL_build')
+    print("make -j8")
   print("configuring Dockerfile")
   if not inOptions.skipOp:
     os.system("mkdir " + dev_env_base_dir + "/images")
@@ -944,7 +945,6 @@ def main(cmndLineArgs):
   else:
     print("Skipping on request ...")
   print("\n[End]")
-
 
 #
 # Script driver
