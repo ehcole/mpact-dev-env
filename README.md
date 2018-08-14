@@ -14,7 +14,7 @@ The installation creates the following directory structure:
     * load_dev_env.[sh,csh]
     * toolset/
       * gcc-<gcc-version>/
-      * mpi-<mpi-version>/
+      * mpich-<mpich-version>/
     * tpls/
   * images/
     * dev_env/
