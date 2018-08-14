@@ -61,7 +61,7 @@ sourceGitUrlBase_default = "https://github.com/tribitsdevtools/"
 autoconf_version_default = "2.69"
 cmake_version_default = "3.3.2"
 gcc_version_default = "4.8.3"
-mpich_version_default = "3.2.1"
+mpich_version_default = "3.1.3"
 mvapich_version_default = "2.3"
 
 # Common (compile independent) tools
@@ -549,7 +549,6 @@ def installToolFromSource(toolName, toolVer, installBaseDir,
 #
 
 def main(cmndLineArgs):
-
   #
   # Get the command-line options
   #
@@ -714,7 +713,6 @@ def main(cmndLineArgs):
   print("\n\nC) Untar, configure, build and install each selected tool:\n")
   ###
   if inOptions.doInstall:
-
     if "gitdist" in commonToolsSelectedSet:
       print("\nInstalling gitdist ...")
       echoRunSysCmnd("cp "+pythonUtilsDir+"/gitdist "+common_tools_dir+"/")
@@ -817,18 +815,27 @@ def main(cmndLineArgs):
         raise Exception("Error, gcc has not been installed yet." \
           "  Missing directory '"+gccInstallDir+"'") 
       LD_LIBRARY_PATH = os.environ.get("LD_LIBRARY_PATH", "")
-      installToolFromSource(
-        "mpich",
-        mpich_version,
-        compiler_toolset_dir,
-        {
-          "CC" : gccInstallDir+"/bin/gcc",
-          "CXX" : gccInstallDir+"/bin/g++",
-          "FC" : gccInstallDir+"/bin/gfortran",
-          "LD_LIBRARY_PATH" : compiler_toolset_dir+"/lib64:"+LD_LIBRARY_PATH
-         },
-        inOptions
+      if mpich_version == "3.1.3":
+        installToolFromSource(
+          "mpich",
+          mpich_version,
+          compiler_toolset_dir,
+          {
+            "CC" : gccInstallDir+"/bin/gcc",
+            "CXX" : gccInstallDir+"/bin/g++",
+            "FC" : gccInstallDir+"/bin/gfortran",
+            "LD_LIBRARY_PATH" : compiler_toolset_dir+"/lib64:"+LD_LIBRARY_PATH
+          },
+          inOptions
         )
+      else:
+        os.system("tar xfz mpich-" + mpich_version + ".tar.gz")
+        os.system("mkdir -p " + compiler_toolset_dir + "/mpich-" + mpich_version)
+        os.system("mkdir tmp") 
+        os.chdir("tmp")
+        os.system("../mpich-" + mpich_version +  "/configure -prefix=" + compiler_toolset_dir + "/mpich-" + mpich_version)
+        os.system("make")
+        os.system("make install")
       if not inOptions.skipOp:
         mpich_module = open(dev_env_dir + "/mpich-" + mpich_version, 'w+')
         mpich_module.write("conflict mvapich\n")
@@ -897,8 +904,7 @@ def main(cmndLineArgs):
     os.system("mv load_dev_env.csh " + dev_env_dir)
 
   print("installing CMake target for vera_tpls")
-  if not inOptions.skipOp and inOptions.doInstall:
-    
+  if not inOptions.skipOp and inOptions.doInstall:   
     os.system("mkdir " + dev_env_base_dir + "/tpls")
     os.chdir(scratch_dir + "/..")
     os.system("git submodule init && git submodule update")
