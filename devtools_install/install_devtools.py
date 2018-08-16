@@ -653,11 +653,31 @@ def main(cmndLineArgs):
     assertInstallDirExists(common_tools_dir, inOptions)
     assertInstallDirExists(compiler_toolset_base_dir, inOptions)
     assertInstallDirExists(compiler_toolset_dir, inOptions)
-
+  if not inOptions.skipOp:
+    os.system("mkdir " + dev_env_base_dir + "/images")
+    gcc_first = gcc_version[0]
+    gcc_short = str()
+    for chr in gcc_version:
+      if chr != '.':
+        gcc_short += chr
+    if mvapichInstalled:
+      mpi_version = "mvapich2-" + mvapich_version
+    else:
+      mpi_version = "mpich-" + mpich_version
+    if inOptions.mkl_true:
+      mkl_true = "true"
+      tpl_url = 'https://github.com/ehcole/MPACT_tpls.git'
+      tpl_source_dir = "/MPACT_tpls/TPL_build/"
+    else:
+      mkl_true = "false"
+      tpl_url = "https://github.com/CASL/vera_tpls.git"
+      tpl_source_dir = "/vera_tpls/TPL_build/"
+    os.system("autoconf")
+    os.system("./configure GCC_VERSION=gcc_version GCC_FIRST=gcc_first GCC_SHORT=gcc_short MPI_VERSION=MPI_VERSION CMAKE_VERSION=cmake_version TPL_URL=tpl_url TPL_SOURCE_DIR=tpl_source_dir MKL_TRUE=mkl_true")
+    os.system("mv Dockerfile " + dev_env_base_dir + "/images")
   ###
   print("\n\nB) Download all sources for each selected tool:\n")
   ###
-
   if inOptions.doDownload:
     for tool in commonToolsSelectedSet:
       if "cmake" in tool:
@@ -917,33 +937,10 @@ def main(cmndLineArgs):
     print("git submodule init && git submodule update")
     print('cmake  -D CMAKE_INSTALL_PREFIX=' + dev_env_base_dir + '/tpls -D CMAKE_BUILD_TYPE=Release  -D CMAKE_CXX_COMPILER=mpicxx  -D CMAKE_C_COMPILER=mpicc  -D CMAKE_Fortran_COMPILER=mpif90  -D FFLAGS="-fPIC -O3"  -D CFLAGS="-fPIC -O3"  -D CXXFLAGS="-fPIC -O3"  -D LDFLAGS=""  -D ENABLE_SHARED=ON  -D PROCS_INSTALL=8 ../vera_tpls/TPL_build')
     print("make -j8")
-  print("configuring Dockerfile")
   if not inOptions.skipOp:
-    os.system("mkdir " + dev_env_base_dir + "/images")
-    gcc_first = gcc_version[0]
-    gcc_short = str()
-    for chr in gcc_version:
-      if chr != '.':
-        gcc_short += chr
-    if mvapichInstalled:
-      mpi_version = "mvapich2-" + mvapich_version
-    else:
-      mpi_version = "mpich-" + mpich_version
-    if inOptions.mkl_true:
-      mkl_true = "true"
-      tpl_url = 'https://github.com/ehcole/MPACT_tpls.git'
-      tpl_source_dir = "/MPACT_tpls/TPL_build/"
-    else:
-      mkl_true = "false"
-      tpl_url = "https://github.com/CASL/vera_tpls.git"
-      tpl_source_dir = "/vera_tpls/TPL_build/"
-    os.system("autoconf")
-    os.system("./configure GCC_VERSION=gcc_version GCC_FIRST=gcc_first GCC_SHORT=gcc_short MPI_VERSION=MPI_VERSION CMAKE_VERSION=cmake_version TPL_URL=tpl_url TPL_SOURCE_DIR=tpl_source_dir MKL_TRUE=mkl_true")
-    os.system("mv Dockerfile " + dev_env_base_dir + "/images")
     if inOptions.build_image:
       print("building docker image")
-      os.system("docker build -t test-mpact-dev-env " + dev_env_base_dir + "/images")
-      
+      os.system("docker build -t test-mpact-dev-env " + dev_env_base_dir + "/images")  
   if inOptions.showFinalInstructions:
     print("\nTo use the new dev env, just source the file:\n")
     print("  source " + dev_env_base_dir + "/env/load_dev_env.sh\n")
