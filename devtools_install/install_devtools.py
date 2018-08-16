@@ -655,6 +655,8 @@ def main(cmndLineArgs):
     assertInstallDirExists(compiler_toolset_dir, inOptions)
   if not inOptions.skipOp:
     os.system("mkdir " + dev_env_base_dir + "/images")
+    os.system("mkdir " + dev_env_base_dir + "/images/dev_env")
+    os.system("mkdir " + dev_env_base_dir + "/install")
     gcc_first = gcc_version[0]
     gcc_short = str()
     for chr in gcc_version:
@@ -674,7 +676,8 @@ def main(cmndLineArgs):
       tpl_source_dir = "/vera_tpls/TPL_build/"
     os.system("autoconf")
     os.system("./configure GCC_VERSION=gcc_version GCC_FIRST=gcc_first GCC_SHORT=gcc_short MPI_VERSION=MPI_VERSION CMAKE_VERSION=cmake_version TPL_URL=tpl_url TPL_SOURCE_DIR=tpl_source_dir MKL_TRUE=mkl_true")
-    os.system("mv Dockerfile " + dev_env_base_dir + "/images")
+    os.system("mv Dockerfile " + dev_env_base_dir + "/images/dev_env")
+    os.system("mv Dockerifle_install " + dev_env_base_dir + "/images/install")
   ###
   print("\n\nB) Download all sources for each selected tool:\n")
   ###
@@ -686,7 +689,11 @@ def main(cmndLineArgs):
         print("")
         cmakeShort = cmake_version[:-2]
         if not inOptions.skipOp:
-          os.system("wget https://cmake.org/files/v" + cmakeShort + "/cmake-" + cmake_version + ".tar.gz")
+          try:
+            os.system("wget https://cmake.org/files/v" + cmakeShort + "/cmake-" + cmake_version + ".tar.gz")
+          except:
+            print("Invalid CMake version passed. No Download link found.")
+            exit(1)
           os.system("mv cmake-" + cmake_version + ".tar.gz " + common_tools_dir)
         else:
           print("wget " + dev_env_base_dir + "/common_tools https://cmake.org/files/v" + cmakeShort + "/cmake-" + cmake_version + ".tar.gz")
@@ -699,7 +706,11 @@ def main(cmndLineArgs):
         print("Downloading the source for gcc-" + gcc_version + " ...")
         print("")
         if not inOptions.skipOp:
-          os.system("wget https://ftp.gnu.org/gnu/gcc/gcc-" + gcc_version + "/gcc-" + gcc_version + ".tar.gz")
+          try:
+            os.system("wget https://ftp.gnu.org/gnu/gcc/gcc-" + gcc_version + "/gcc-" + gcc_version + ".tar.gz")
+          except:
+            print("Invalid gcc version passed. No Download link found.")
+            exit(1)
         else:
           print("wget https://ftp.gnu.org/gnu/gcc/gcc-" + gcc_version + "/gcc-" + gcc_version + ".tar.gz")
 
@@ -712,7 +723,11 @@ def main(cmndLineArgs):
           print("Downloading the source for mpich-" + mpich_version + " ..")
           print("")
           if not inOptions.skipOp:
-            os.system("wget / http://www.mpich.org/static/downloads/" + mpich_version + "/mpich-" + mpich_version + ".tar.gz")
+            try:
+              os.system("wget / http://www.mpich.org/static/downloads/" + mpich_version + "/mpich-" + mpich_version + ".tar.gz")
+            except:
+              print("Invalid mpich version passed. No Download link found.")
+              exit(1)
           else:
             print("wget http://www.mpich.org/static/downloads/" + mpich_version + "/mpich-" + mpich_version + ".tar.gz")
       elif "mvapich" in tool:
@@ -720,7 +735,11 @@ def main(cmndLineArgs):
         print("Downloading the source for mvapich-" + mvapich_version + " ..")
         print("")
         if not inOptions.skipOp:
-          os.system("wget http://mvapich.cse.ohio-state.edu/download/mvapich/mv2/mvapich2-" + mvapich_version + ".tar.gz")
+          try:
+            os.system("wget http://mvapich.cse.ohio-state.edu/download/mvapich/mv2/mvapich2-" + mvapich_version + ".tar.gz")
+          except:
+            print("Invalid mvapich version passed. No Download link found.")
+            exit(1)
         else:
           print("wget/ http://mvapich.cse.ohio-state.edu/download/mvapich/mv2/mvapich2-" + mvapich_version + ".tar.gz")
   else:
