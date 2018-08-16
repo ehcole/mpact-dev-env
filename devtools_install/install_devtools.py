@@ -739,7 +739,7 @@ def main(cmndLineArgs):
       InstallProgramDriver.fixupInstallPermissions(inOptions, common_tools_dir)
 
     if "cmake" in commonToolsSelectedSet:
-      os.system("tar -xvf " + common_tools_dir + "/cmake-" + cmake_version + ".tar.gz")
+      os.system("tar -xf " + common_tools_dir + "/cmake-" + cmake_version + ".tar.gz")
       os.system("mv -f cmake-" + cmake_version + " " + common_tools_dir)
       os.system("yum install openssl-devel")
       if not inOptions.skipOp:
