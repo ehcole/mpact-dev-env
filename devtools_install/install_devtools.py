@@ -947,6 +947,8 @@ def main(cmndLineArgs):
     os.system("mkdir " + dev_env_base_dir + "/tpls")
     os.chdir(scratch_dir + "/..")
     os.system("git submodule init && git submodule update")
+    if not os.path.exists(scratch_dir + "/tmp"):
+      os.mkdir(scratch_dir + "/tmp")
     os.chdir(scratch_dir + "/tmp")
     os.system("rm -rf *")
     os.system("module load mpi")
