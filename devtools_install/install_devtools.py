@@ -656,7 +656,7 @@ def main(cmndLineArgs):
   if not inOptions.skipOp:
     os.system("mkdir " + dev_env_base_dir + "/images")
     os.system("mkdir " + dev_env_base_dir + "/images/dev_env")
-    os.system("mkdir " + dev_env_base_dir + "/install")
+    os.system("mkdir " + dev_env_base_dir + "/images/install")
     gcc_first = gcc_version[0]
     gcc_short = str()
     for chr in gcc_version:
