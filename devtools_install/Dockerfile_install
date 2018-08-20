@@ -1,4 +1,4 @@
-FROM test-install_devtools:latest
+FROM mpact-dev-env:latest
 ADD . /scratch
 RUN yum update -y && \
     yum install -y openssh-server && \
