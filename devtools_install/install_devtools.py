@@ -677,7 +677,7 @@ def main(cmndLineArgs):
     os.system("autoconf")
     os.system("./configure GCC_VERSION=gcc_version GCC_FIRST=gcc_first GCC_SHORT=gcc_short MPI_VERSION=MPI_VERSION CMAKE_VERSION=cmake_version TPL_URL=tpl_url TPL_SOURCE_DIR=tpl_source_dir MKL_TRUE=mkl_true")
     os.system("mv Dockerfile " + dev_env_base_dir + "/images/dev_env")
-    os.system("mv Dockerifle_install " + dev_env_base_dir + "/images/install")
+    os.system("mv Dockerfile_install " + dev_env_base_dir + "/images/install")
   ###
   print("\n\nB) Download all sources for each selected tool:\n")
   ###
