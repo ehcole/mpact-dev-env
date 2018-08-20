@@ -1,9 +1,9 @@
 FROM test-install_devtools:latest
-ADD . /scratch/
+ADD . /scratch
 RUN yum update -y && \
     yum install -y openssh-server && \
     yum clean all && \
-    useradd mpact_user && \
+    useradd mpact_user -p mpact && \
     mkdir -p /var/run/sshd && \
     sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config && \
     /usr/bin/ssh-keygen -A && \
