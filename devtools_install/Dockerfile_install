@@ -13,6 +13,9 @@ RUN yum update -y && \
     mkdir -p /home/mpact_user/.ssh/authorized_keys && \
     echo "PermitEmptyPasswords yes" >> /etc/ssh/sshd_config
 
+ARG USER_SSH_PUBLIC_KEY
+COPY ${USER_SSH_PUBLIC_KEY} /home/mpact_user/.ssh/authorized_keys
+
 RUN chmod 700 /home/mpact_user/.ssh && chmod 600 /home/mpact_user/.ssh/authorized_keys && \
     chown -R mpact_user /home/mpact_user && chgrp -R mpact_user /home/mpact_user
 EXPOSE 22
