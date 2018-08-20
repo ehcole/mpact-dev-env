@@ -23,7 +23,7 @@ The installation creates the following directory structure:
     
 <b>Versioning</b>
 
-mpact-dev-env-<major_version>.<minor_version>.<patch>-tag
+mpact-dev-env-\<major_version>.\<minor_version>.\<patch>-tag
 
 Major version: incremented if TPLs or toolchain changes
 
