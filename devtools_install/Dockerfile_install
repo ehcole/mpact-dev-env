@@ -3,17 +3,17 @@ ADD . /scratch
 RUN yum update -y && \
     yum install -y openssh-server && \
     yum clean all && \
-    useradd mpact_user -p mpact && \
+    useradd mpact_user && \
+    echo "cd /scratch" >> ~mpact_user/.bash_profile && \
+    passwd -d mpact_user && \
     mkdir -p /var/run/sshd && \
     sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config && \
     /usr/bin/ssh-keygen -A && \
-    sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
-
-ARG USER_SSH_PUBLIC_KEY
-COPY ${USER_SSH_PUBLIC_KEY} /home/mpact_user/.ssh/authorized_keys
+    sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd && \
+    mkdir -p /home/mpact_user/.ssh/authorized_keys && \
+    echo "PermitEmptyPasswords yes" >> /etc/ssh/sshd_config
 
 RUN chmod 700 /home/mpact_user/.ssh && chmod 600 /home/mpact_user/.ssh/authorized_keys && \
     chown -R mpact_user /home/mpact_user && chgrp -R mpact_user /home/mpact_user
-
 EXPOSE 22
 CMD ["/usr/sbin/sshd","-D"]
