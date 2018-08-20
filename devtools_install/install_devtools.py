@@ -930,17 +930,10 @@ def main(cmndLineArgs):
   else:
     print("Skipping install of the tools on request!")
 
-  ###
-  print("\n\nD) Final instructions for using installed dev env:")
-  ###
-
   if inOptions.skipOp:
     print("\n***")
     print("*** NOTE: --no-op provided, only traced actions that would have been taken!")
     print("***")
-  else:
-    os.system("mv load_dev_env.sh " + dev_env_dir)
-    os.system("mv load_dev_env.csh " + dev_env_dir)
 
   print("installing CMake target for vera_tpls")
   if not inOptions.skipOp and inOptions.doInstall:   
@@ -963,6 +956,7 @@ def main(cmndLineArgs):
       print("building docker image")
       os.system("docker build -t test-mpact-dev-env " + dev_env_base_dir + "/images")  
   if inOptions.showFinalInstructions:
+    print("\n\nD) Final instructions for using installed dev env:")
     print("\nTo use the new dev env, just source the file:\n")
     print("  source " + dev_env_base_dir + "/env/load_dev_env.sh\n")
     print("for sh or bash shells (or load_dev_env.csh for csh shell).\n")
